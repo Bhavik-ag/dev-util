@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -62,15 +63,37 @@ Examples:
 		}
 		fmt.Println()
 		
-		// Parse command and arguments
-		parts := strings.Fields(project.Command)
-		if len(parts) == 0 {
-			fmt.Printf("Error: Invalid command '%s'\n", project.Command)
-			os.Exit(1)
+		// Check if command contains environment variables or shell features
+		// If it does, use shell execution; otherwise use direct execution
+		var execCmd *exec.Cmd
+		
+		if strings.Contains(project.Command, "=") || strings.Contains(project.Command, "&&") || 
+		   strings.Contains(project.Command, "||") || strings.Contains(project.Command, "|") ||
+		   strings.Contains(project.Command, ">") || strings.Contains(project.Command, "<") ||
+		   strings.Contains(project.Command, "$") {
+			// Use shell execution for commands with environment variables or shell features
+			var shell string
+			var shellArgs []string
+			
+			if runtime.GOOS == "windows" {
+				shell = "cmd"
+				shellArgs = []string{"/C", project.Command}
+			} else {
+				shell = "sh"
+				shellArgs = []string{"-c", project.Command}
+			}
+			
+			execCmd = exec.Command(shell, shellArgs...)
+		} else {
+			// Parse command and arguments for simple commands
+			parts := strings.Fields(project.Command)
+			if len(parts) == 0 {
+				fmt.Printf("Error: Invalid command '%s'\n", project.Command)
+				os.Exit(1)
+			}
+			execCmd = exec.Command(parts[0], parts[1:]...)
 		}
 		
-		// Create command
-		execCmd := exec.Command(parts[0], parts[1:]...)
 		execCmd.Dir = project.Path
 		execCmd.Stdout = os.Stdout
 		execCmd.Stderr = os.Stderr
