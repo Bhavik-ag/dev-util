@@ -119,7 +119,7 @@ if [ -n "$COMPLETION_DIR" ]; then
             ./build/dev completion bash > "$COMPLETION_FILE"
             echo -e "${GREEN}✅ Bash completion installed to: $COMPLETION_FILE${NC}"
             
-            # Add to .bashrc if not already there
+            # Add completion setup to .bashrc if not already there
             if ! grep -q "dev-util" ~/.bashrc 2>/dev/null; then
                 echo "" >> ~/.bashrc
                 echo "# Enable bash completion for dev-util" >> ~/.bashrc
@@ -132,12 +132,22 @@ if [ -n "$COMPLETION_DIR" ]; then
             else
                 echo -e "${GREEN}✅ Bash completion already configured in ~/.bashrc${NC}"
             fi
+            
+            # Add shell integration (dev-cd function) to .bashrc
+            if ! grep -q 'eval "$(dev init bash)"' ~/.bashrc 2>/dev/null; then
+                echo "" >> ~/.bashrc
+                echo "# dev-util shell integration (enables dev-cd command)" >> ~/.bashrc
+                echo 'eval "$(dev init bash)"' >> ~/.bashrc
+                echo -e "${GREEN}✅ Shell integration added to ~/.bashrc${NC}"
+            else
+                echo -e "${GREEN}✅ Shell integration already configured in ~/.bashrc${NC}"
+            fi
             ;;
         "zsh")
             ./build/dev completion zsh > "$COMPLETION_FILE"
             echo -e "${GREEN}✅ Zsh completion installed to: $COMPLETION_FILE${NC}"
             
-            # Add to .zshrc if not already there
+            # Add completion setup to .zshrc if not already there
             if ! grep -q "fpath.*site-functions" ~/.zshrc 2>/dev/null; then
                 echo "" >> ~/.zshrc
                 echo "# Enable zsh completion" >> ~/.zshrc
@@ -145,18 +155,39 @@ if [ -n "$COMPLETION_DIR" ]; then
                 echo "autoload -U compinit && compinit" >> ~/.zshrc
                 echo -e "${YELLOW}⚠️  Added zsh completion setup to ~/.zshrc${NC}"
             fi
+            
+            # Add shell integration (dev-cd function) to .zshrc
+            if ! grep -q 'eval "$(dev init zsh)"' ~/.zshrc 2>/dev/null; then
+                echo "" >> ~/.zshrc
+                echo "# dev-util shell integration (enables dev-cd command)" >> ~/.zshrc
+                echo 'eval "$(dev init zsh)"' >> ~/.zshrc
+                echo -e "${GREEN}✅ Shell integration added to ~/.zshrc${NC}"
+            else
+                echo -e "${GREEN}✅ Shell integration already configured in ~/.zshrc${NC}"
+            fi
             ;;
         "fish")
             ./build/dev completion fish > "$COMPLETION_FILE"
             echo -e "${GREEN}✅ Fish completion installed to: $COMPLETION_FILE${NC}"
-            echo -e "${YELLOW}Fish completion is automatically loaded. No additional setup needed.${NC}"
+            
+            # Add shell integration to fish config
+            FISH_CONFIG="$HOME/.config/fish/config.fish"
+            mkdir -p "$(dirname "$FISH_CONFIG")"
+            if ! grep -q "dev init fish" "$FISH_CONFIG" 2>/dev/null; then
+                echo "" >> "$FISH_CONFIG"
+                echo "# dev-util shell integration (enables dev-cd command)" >> "$FISH_CONFIG"
+                echo "dev init fish | source" >> "$FISH_CONFIG"
+                echo -e "${GREEN}✅ Shell integration added to $FISH_CONFIG${NC}"
+            else
+                echo -e "${GREEN}✅ Shell integration already configured in $FISH_CONFIG${NC}"
+            fi
             ;;
     esac
     
     echo ""
-    echo -e "${GREEN}🎉 Shell completion setup complete!${NC}"
+    echo -e "${GREEN}🎉 Shell completion and integration setup complete!${NC}"
     echo ""
-    echo -e "${YELLOW}To activate completion:${NC}"
+    echo -e "${YELLOW}To activate:${NC}"
     case "$SHELL_NAME" in
         "bash")
             echo "  source ~/.bashrc"
@@ -167,14 +198,14 @@ if [ -n "$COMPLETION_DIR" ]; then
             echo "  # OR restart your terminal"
             ;;
         "fish")
-            echo "  # Completion is automatically available"
+            echo "  # Restart your terminal or run: source ~/.config/fish/config.fish"
             ;;
     esac
     echo ""
-    echo -e "${BLUE}Test completion by typing:${NC}"
-    echo "  dev <TAB>"
-    echo "  dev run <TAB>"
-    echo "  dev remove <TAB>"
+    echo -e "${YELLOW}Available commands:${NC}"
+    echo "  dev-cd <project>   - Change to a project directory"
+    echo "  dev-run <project>  - Run a project's dev server"
+    echo "  dev <TAB>          - Tab completion for all commands"
 fi
 
 echo ""

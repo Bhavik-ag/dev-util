@@ -83,6 +83,29 @@ This will:
    # Add to your shell config file
    ```
 
+## Shell Integration (Recommended)
+
+To enable the `dev-cd` command for changing directories without spawning a new shell, add this to your shell config:
+
+**For Bash** (`~/.bashrc`):
+```bash
+eval "$(dev init bash)"
+```
+
+**For Zsh** (`~/.zshrc`):
+```bash
+eval "$(dev init zsh)"
+```
+
+**For Fish** (`~/.config/fish/config.fish`):
+```fish
+dev init fish | source
+```
+
+After setup, you can use:
+- `dev-cd <project>` - Change to a project's directory
+- `dev-run <project>` - Run a project's dev server
+
 ## Usage
 
 ### Adding Projects

@@ -20,32 +20,40 @@ command, and creation date.`,
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
-		
+
+		namesOnly, _ := cmd.Flags().GetBool("names-only")
+		if namesOnly {
+			for _, project := range projects {
+				fmt.Println(project.Name)
+			}
+			return
+		}
+
 		if len(projects) == 0 {
 			fmt.Println("No projects registered. Use 'dev add' to add your first project.")
 			return
 		}
-		
+
 		fmt.Printf("📋 Registered Projects (%d total)\n\n", len(projects))
-		
-		// Create tabwriter for aligned output
+
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		fmt.Fprintln(w, "NAME\tPATH\tCOMMAND\tCREATED")
 		fmt.Fprintln(w, "----\t----\t-------\t-------")
-		
+
 		for _, project := range projects {
 			created := project.CreatedAt.Format("2006-01-02")
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", 
-				project.Name, 
-				project.Path, 
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+				project.Name,
+				project.Path,
 				project.Command,
 				created)
 		}
-		
+
 		w.Flush()
 	},
 }
 
 func init() {
+	listCmd.Flags().Bool("names-only", false, "Output only project names (for shell completions)")
 	rootCmd.AddCommand(listCmd)
 }
